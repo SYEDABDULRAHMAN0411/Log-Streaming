@@ -1,0 +1,6 @@
+{
+  "client": {
+    "source": "logs-dashboard",
+    "plugin": "zcatalyst-cli-plugin-react"
+  }
+}

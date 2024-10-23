@@ -1,0 +1,30 @@
+{
+  "defaults": {
+    "project": 1,
+    "env": 1
+  },
+  "actives": {
+    "project": 1,
+    "env": 1
+  },
+  "projects": [
+    {
+      "idx": 1,
+      "id": "26620000000008078",
+      "name": "logs-dashboard",
+      "domain": {
+        "id": "10090319959",
+        "name": "logs-dashboard-869583102.development"
+      },
+      "timezone": "Asia/Kolkata",
+      "env": [
+        {
+          "idx": 1,
+          "id": "869583102",
+          "name": "Development",
+          "type": 3
+        }
+      ]
+    }
+  ]
+}
