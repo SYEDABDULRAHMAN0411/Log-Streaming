@@ -177,18 +177,11 @@ const LogStreaming = () => {
                                 id="endDate"
                                 className="filter-datetime"
                                 value={filterEndDate}
-                                onChange={(e) => {
-                                    const selectedDate = new Date(e.target.value);
-                                    // If today is selected, set time to 11:59:59 PM
-                                    if (selectedDate.toDateString() === new Date().toDateString()) {
-                                        selectedDate.setHours(23, 59, 59, 999);
-                                        setFilterEndDate(selectedDate.toISOString().slice(0, 19)); // Convert to string for input
-                                    } else {
-                                        setFilterEndDate(e.target.value);
-                                    }
-                                }}
+                                onChange={(e) => setFilterEndDate(e.target.value)
+                                }
                             />
                         </div>
+
                     </div>
                 </div>
             </section>
