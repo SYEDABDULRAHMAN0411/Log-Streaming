@@ -29,7 +29,7 @@ const LogStreaming = () => {
                 }
 
                 const newLog = {
-                    timestamp: new Date(logEntry.timestamp), // Ensure this is a Date object
+                    timestamp: new Date(logEntry.timestamp),
                     level: logEntry.level,
                     method: logEntry.method,
                     url: logEntry.url,
@@ -38,7 +38,6 @@ const LogStreaming = () => {
                     bytes: logEntry.bytes,
                     statusCode: logEntry.statusCode,
                 };
-
 
                 setLogLevels((prevLevels) => {
                     if (!prevLevels.includes(logEntry.level)) {
@@ -65,7 +64,7 @@ const LogStreaming = () => {
 
     // Filter logs based on selected level and date
     const filteredLogs = logs.filter((log) => {
-        const logDateTime = new Date(log.timestamp); // Convert to Date object
+        const logDateTime = new Date(log.timestamp);
         const matchesLevel = filterLevel === 'ALL' || log.level === filterLevel;
 
         // Check for valid timestamp
@@ -78,8 +77,20 @@ const LogStreaming = () => {
         const matchesStartDate = !filterStartDate || logDateTime >= new Date(filterStartDate);
         const matchesEndDate = !filterEndDate || logDateTime <= new Date(filterEndDate);
 
-        // Match logs based on the search query
-        const matchesSearch = !searchQuery || JSON.stringify(log).toLowerCase().includes(searchQuery.toLowerCase());
+        // Normalize the search query by trimming whitespace
+        const normalizedSearchQuery = searchQuery.trim().toLowerCase();
+        const searchWords = normalizedSearchQuery.split(/[\s,]+/).filter(Boolean); // Split by space and remove empty entries
+
+        // Match logs based on the normalized search query
+        const matchesSearch = searchWords.length === 0 || searchWords.every((word) => {
+            const logString = `${log.method} ${log.url} (Client: ${log.client}) - ${log.responseTime}s, ${log.bytes} bytes, Status: ${log.statusCode}`.toLowerCase();
+
+            return logString.includes(word) || // Check the entire log string
+                (log.message && log.message.toLowerCase().includes(word)) ||
+                (log.level && log.level.toLowerCase().includes(word)) || // Check level too
+                (log.bytes && log.bytes.toString().toLowerCase().includes(word)) || // Check bytes
+                (log.statusCode && log.statusCode.toString().toLowerCase().includes(word)); // Check status code
+        });
 
         // Return true if the log matches all filters
         return matchesLevel && matchesStartDate && matchesEndDate && matchesSearch;
@@ -91,32 +102,39 @@ const LogStreaming = () => {
             logContainer.scrollTop = logContainer.scrollHeight; // Scroll to the bottom
         }
     }, [filteredLogs]);
+
+    // Function to escape special regex characters
+    const escapeRegExp = (string) => {
+        return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // Escape special characters
+    };
+
+    // Function to highlight the search text in log messages
     const highlightText = (text) => {
         if (!searchQuery) return text; // No highlight if no search query
-        const parts = text.split(new RegExp(`(${searchQuery})`, 'gi')); // Split by search query
+        const escapedQuery = escapeRegExp(searchQuery); // Escape special characters
+        const parts = text.split(new RegExp(`(${escapedQuery})`, 'gi')); // Split by search query
         return parts.map((part, index) =>
             part.toLowerCase() === searchQuery.toLowerCase() ? (
-                <span key={index} style={{ backgroundColor: 'black' }}>{part}</span>
+                <span key={index} style={{ backgroundColor: 'black', color: 'white' }}>{part}</span> // Highlight matches
             ) : part
         );
     };
-
 
     return (
         <div className="page-container">
             <header className="header">
                 <h1 className="title">Real-time Log Streaming Dashboard</h1>
             </header>
-           
+
             <section className="filter-section">
                 <div className="filter-container">
-                    {/* Dropdown in the left corner */}
+                    {/* Dropdown */}
                     <div className="filter-dropdown">
                         <label htmlFor="filterSelect">Filter Level:</label>
-                        <select 
+                        <select
                             id="filterSelect"
-                            className="filter-select" 
-                            value={filterLevel} 
+                            className="filter-select"
+                            value={filterLevel}
                             onChange={(e) => setFilterLevel(e.target.value)}
                         >
                             {logLevels.map((level) => (
@@ -126,8 +144,8 @@ const LogStreaming = () => {
                             ))}
                         </select>
                     </div>
-    
-                    {/* Search bar in the center */}
+
+                    {/* Search bar */}
                     <div className="search-container">
                         <label htmlFor="searchBar">Search:</label>
                         <input
@@ -139,7 +157,7 @@ const LogStreaming = () => {
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                     </div>
-    
+
                     {/* Date filters */}
                     <div className="date-filters">
                         <div>
@@ -174,7 +192,7 @@ const LogStreaming = () => {
                     </div>
                 </div>
             </section>
-    
+
             <section className="log-section">
                 <div className="log-box">
                     <div className="log-container" ref={logContainerRef}>
@@ -200,8 +218,6 @@ const LogStreaming = () => {
             </section>
         </div>
     );
-    
-    
-}
+};
 
 export default LogStreaming;
